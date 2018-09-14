@@ -15,11 +15,14 @@ import java.util.Optional;
 @RestController
 public class UserJPAResource {
 
-    @Autowired
-    private UserDaoService userDaoService;
+//    @Autowired
+//    private UserDaoService userDaoService;
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     @Autowired
     MessageSource messageSource;
@@ -38,19 +41,42 @@ public class UserJPAResource {
         return user;
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/users/delete/{id}")
     public void deleteUser(@PathVariable Integer id) throws Exception {
-        User user = this.userDaoService.deleteById(id);
-        if (user == null) {
-            throw new Exception("id : ");
-        }
+         this.repository.deleteById(id);
     }
 
     @PostMapping("/users")
     public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
-        User created = this.userDaoService.save(user);
+        User created = this.repository.save(user);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("{/id}").buildAndExpand(created.getId()).toUri();
         return ResponseEntity.created(location).build();
+
+    }
+
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity<Object> createPost(@PathVariable Integer id,@RequestBody Post post) throws Exception {
+        Optional<User> user = this.repository.findById(id);
+        if (!user.isPresent()) {
+            throw new Exception("id : ");
+        }
+
+        User savedUSer=user.get();
+
+        post.setUser(savedUSer);
+        postRepository.save(post);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("{/id}").buildAndExpand(post.getId()).toUri();
+        return ResponseEntity.created(location).build();
+    }
+
+
+    @GetMapping("/users/{id}/posts")
+    public List<Post> retrievePosts(@PathVariable Integer id) throws Exception {
+        Optional<User> userPosts = this.repository.findById(id);
+        if (!userPosts.isPresent()) {
+            throw new Exception("id : ");
+        }
+        return userPosts.get().getPostList();
 
     }
 

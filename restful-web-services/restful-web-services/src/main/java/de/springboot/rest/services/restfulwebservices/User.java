@@ -6,11 +6,13 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import javax.xml.crypto.Data;
 import java.util.Date;
+import java.util.List;
 
 @ApiModel(description = "All user infos")
 @Entity
@@ -27,6 +29,9 @@ public class User {
     @Past(message = "Date must be in the past")
     @ApiModelProperty(notes="can not be in the past")
     private Date date;
+
+    @OneToMany(mappedBy = "user")
+    private List<Post> postList;
 
     public User(){
     }
@@ -49,4 +54,7 @@ public class User {
         return id;
     }
 
+    public List<Post> getPostList() {
+        return postList;
+    }
 }
